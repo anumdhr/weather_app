@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/models/newApi.dart';
+import 'package:lottie/lottie.dart';
 
 import '../bloc/bloc_service.dart';
 import '../widgets/additional_info.dart';
@@ -22,7 +23,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getData();
   }
@@ -31,10 +31,28 @@ class _HomePageState extends State<HomePage> {
     await context.read<WeatherBloc>().getCurrentWeather("Kathmandu");
   }
 
+  String getLottieAnimation(String weatherMain) {
+    switch (weatherMain.toLowerCase()) {
+      case 'clear':
+        return 'assets/sunny.json';
+      case 'clouds':
+        return 'assets/Animation - 1717729382399.json';
+      case 'rain':
+        return 'assets/Animation - 1717729420680.json';
+      case 'snow':
+        return 'assets/Animation - 1717729444578.json';
+      case 'thunderstorm':
+        return 'assets/Animation - 1717729208844.json';
+      default:
+        return 'assets/sunny.json';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.grey.shade300,
         appBar: AppBar(
           backgroundColor: Colors.white10,
           elevation: 0,
@@ -53,99 +71,99 @@ class _HomePageState extends State<HomePage> {
           ),
           centerTitle: true,
         ),
-        body: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.brown,
-                            )),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.brown,
-                            )),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.brown,
-                            )),
-                        hintText: 'Search City'),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    context.read<WeatherBloc>().getCurrentWeather(controller.text.trim());
-                  },
-                  child: const Text('Search',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w700,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: controller,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.brown,
+                              )),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.brown,
+                              )),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.brown,
+                              )),
+                          hintText: 'Search City'),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            BlocBuilder<WeatherBloc, ApiModel>(
-              builder: (context, apiState) {
-                if (apiState.weather!.isNotEmpty) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CurrentWeather(
-                        icon: Icon(
-                          Icons.wb_sunny_sharp,
-                          color: Colors.yellow.shade800,
-                          size: 50,
-                        ),
-                        temp: "${kelvinToCelsius(apiState.main!.feelsLike).toStringAsFixed(2)}°",
-                        location: controller.text.trim().isEmpty ? 'Kathmandu' : controller.text.trim(),
+                  TextButton(
+                    onPressed: () {
+                      context.read<WeatherBloc>().getCurrentWeather(controller.text.trim());
+                    },
+                    child: const Text('Search',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 30),
-                      const Text(
-                        "Additional Information",
-                        style: TextStyle(
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-                      // Text('${kelvinToCelsius(apiState.main!.feelsLike)} °'),
-                      const SizedBox(height: 30),
-                      AdditionalInformation(
-                        wind: "${apiState.wind!.speed} km/s",
-                        pressure: "${apiState.main!.pressure} mmHg",
-                        humidity: "${apiState.main!.humidity} %",
-                        feels_like: "${kelvinToCelsius(apiState.main!.feelsLike).toStringAsFixed(2)}°",
-                        // feels_like: "${apiState.main!.feelsLike} °",
-                      ),
-                    ],
-                  );
-                } else {
-                  return const Expanded(
-                    child: Center(
-                        child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              BlocBuilder<WeatherBloc, ApiModel>(
+                builder: (context, apiState) {
+                  if (apiState is WeatherError) {
+                    return Text("Error: ${apiState.errorMessage}");
+                  } else if (apiState.name!.isNotEmpty) {
+                    String animationPath = getLottieAnimation(apiState.weather!.first.main);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        Text('Search city to get the data'),
+                        Stack(
+                          children: [
+                            Lottie.asset(animationPath, width: double.infinity, height: 300, fit: BoxFit.cover),
+                            CurrentWeather(
+
+                              temp: "${kelvinToCelsius(apiState.main!.feelsLike).toStringAsFixed(2)}°",
+                              location: controller.text.trim().isEmpty ? 'Kathmandu' : controller.text.trim(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+                        const Text(
+                          "Additional Information",
+                          style: TextStyle(
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        AdditionalInformation(
+                          wind: "${apiState.wind!.speed} km/s",
+                          pressure: "${apiState.main!.pressure} mmHg",
+                          humidity: "${apiState.main!.humidity} %",
+                          feels_like: "${kelvinToCelsius(apiState.main!.feelsLike).toStringAsFixed(2)}°",
+                        ),
                       ],
-                    )),
-                  );
-                }
-              },
-            ),
-          ],
+                    );
+                  } else {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          Text('Search city to get the data'),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
-
-

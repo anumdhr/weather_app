@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
         return WeatherBloc();
       },
       child: const MaterialApp(
+        
         debugShowCheckedModeBanner: false,
         home: HomePage(),
       ),

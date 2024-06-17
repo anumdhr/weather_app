@@ -171,3 +171,8 @@ class Wind {
     "deg": deg,
   };
 }
+class WeatherError extends ApiModel {
+  final String errorMessage;
+
+  WeatherError(this.errorMessage);
+}

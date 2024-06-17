@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 class CurrentWeather extends StatelessWidget {
   const CurrentWeather({
     super.key,
-    required this.icon,
     required this.temp,
     required this.location,
   });
 
-  final Icon icon;
   final String temp;
   final String location;
 
@@ -18,10 +16,7 @@ class CurrentWeather extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          icon,
-          const SizedBox(
-            height: 10,
-          ),
+
           Text(
             temp,
             style: const TextStyle(
